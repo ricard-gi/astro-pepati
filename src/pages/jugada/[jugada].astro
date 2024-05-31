@@ -2,24 +2,29 @@
 
 import Layout from "../../layouts/Layout.astro";
 
-const {jugada} = Astro.params;
 
+
+// funció que retorna la data actual en format any, mes, dia, mm, ss
 function getCurrentDate() {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    const secs = String(date.getSeconds()).padStart(2, '0');
 
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
 }
 
 
-
+// funció que retorna una jugada random 
 function jugadaRandom() {
     let opcions = ["PEDRA", "PAPER", "TISORA"];
     return opcions[Math.floor(Math.random() * opcions.length)];     
 }
 
+// funció que calcula quina de les dos jugades rebudes és la guanyadora, retorna "Guanyador" si és la primera, i "Perdedor" si és la segona
 function guanyador(jugada1, jugada2) {
     if (jugada1 === jugada2) {
         return "Empatat";
@@ -34,20 +39,31 @@ function guanyador(jugada1, jugada2) {
     }
 }
 
+// funció que actualitza la cookie, afegint la informació de la jugada, ordinador i resultat
+// afegim el timestamp actual
+// la cookie sempre es guarda en JSON
 function updateCookie(jugada, ordinador, resultat) {
     let cookie = Astro.cookies.get("pepati");
     let cookieData = JSON.parse(cookie.value);
     cookieData.push({data: getCurrentDate(), jugada, ordinador, resultat});
     Astro.cookies.set("pepati", JSON.stringify(cookieData), { path: '/' });
-    //return Astro.redirect('/');
 }
 
+
+// llegim de la URL la jugada que ha fet l'usuari: valors possibles PEDRA, PAPER, TISORA
+const {jugada} = Astro.params;
+
+// calculem jugada random
 const jugadaOrdinador = jugadaRandom();
 
+// mirem si és guanyador o perdedor
 const resultat = guanyador(jugada, jugadaOrdinador);
 
+// actualitzem la cookie amb la nova jugada
 updateCookie(jugada,jugadaOrdinador, resultat);
 
+
+// html mostra el resultat de la jugada i permet tornars a la pàgina principal
 ---
 
 <Layout>
